@@ -2,7 +2,7 @@ import sys
 import pandas as pd
 from distance_helper import eucledian_distance
 import copy
-def agglomerative(categorical_numerical_map, data, alpha=0):
+def agglomerative(categorical_numerical_map, data):
     csdata = data.copy(deep = True) # copying original dataframe, this copy will be used for centroid selection while the original will be used for clustering
 
     clusters = [[tuple(x)] for x in csdata.to_numpy()] # converting points to tuples for distance calculations
@@ -37,7 +37,7 @@ def agglomerative(categorical_numerical_map, data, alpha=0):
 
         # import pdb; pdb.set_trace()
             # distance_map[value] =
-    import pdb; pdb.set_trace()
+    return dendrogram
 
 def single_link_distance(categorical_numerical_map, cluster1,cluster2):
     smallest_distance = float('inf')
@@ -54,12 +54,17 @@ def main():
     n = len(sys.argv)
     filepath = None
     k = 0  # number of clusters desired
+    alpha = 0
 
     if n != 3:
         print("args error")
     else:
         filepath = sys.argv[1]
         k = int(sys.argv[2])
+        try:
+            alpha = sys.argv[3]
+        except:
+            pass
 
     fileReader = open(filepath, 'r')
     line1 = fileReader.readline().strip('\n') #get first line but strip down the \n
@@ -76,7 +81,8 @@ def main():
     data = data.rename(columns={x: y for x, y in zip(data.columns, range(0, len(
         data.columns)))})  # rename columns with dimension value
     print(data)
-    agglomerative(categorial_numerical_map,data, 10)
+    dendrogram = agglomerative(categorial_numerical_map,data)
+    import pdb; pdb.set_trace()
     # kmeanspp(data,k)
 
 if __name__ == '__main__':
