@@ -2,12 +2,32 @@ import sys
 import pandas as pd
 from distance_helper import eucledian_distance
 import numpy as np
-import copy
 from itertools import groupby
 
 from collections import defaultdict
-import collections
+import json
 
+class NpEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, np.integer):
+            return int(obj)
+        if isinstance(obj, np.floating):
+            return float(obj)
+        if isinstance(obj, np.ndarray):
+            return obj.tolist()
+        return super(NpEncoder, self).default(obj)
+
+class Leaf:
+    def __init__(self,data):
+        self.type = 'Leaf'
+        self.height = 0
+        self.data = ','.join([str(a) for a in data])
+
+class Node:
+    def __init__(self,height):
+        self.type = 'Node'
+        self.height = height
+        self.nodes = []
 
 def agglomerative(categorical_numerical_map, data):
     csdata = data.copy(deep = True) # copying original dataframe, this copy will be used for centroid selection while the original will be used for clustering
@@ -15,7 +35,11 @@ def agglomerative(categorical_numerical_map, data):
     clusters = [tuple(j) for i, j in groupby(clusters)] #combining points that are the same the be within the same cluster to begin with
     dendrogram = defaultdict(list)
     dendrogram[0] = tuple(clusters)
+
     cluster_distance = {}
+
+    cluster_node = {}
+    node_height = defaultdict(list)
     for cluster in clusters:
         cluster_distance[tuple(cluster)] = 0
     import pdb; pdb.set_trace()
@@ -52,6 +76,7 @@ def agglomerative(categorical_numerical_map, data):
         target_cluster = clusters[index_target_cluster]
         current_cluster = clusters[final_smallest_distance_index]
         merged_cluster = (target_cluster, current_cluster)
+        # merged_cluster = target_cluster + current_cluster
         # import pdb; pdb.set_trace()
         remove_cluster(clusters,target_cluster) #removing the one that we're gonna merge
         remove_cluster(clusters, current_cluster) #must cast it to list since it's currently a tuple
@@ -60,7 +85,26 @@ def agglomerative(categorical_numerical_map, data):
         final_merged_distance = distance + cluster_distance.get(target_cluster,0)
         dendrogram[final_merged_distance].append(merged_cluster)
 
-    return dendrogram
+        # if final_merged_distance not in node_height:
+        #     node = Node(final_merged_distance)
+        #     for leaf in merged_cluster:
+        #         LeafNode = Leaf(list(leaf))
+        #         node.nodes.append(LeafNode.__dict__)
+        #     node_height[final_merged_distance] = node
+        # else:
+        #     for leaf in merged_cluster:
+        #         LeafNode = Leaf(leaf)
+        #         node_height[final_merged_distance].nodes.append(LeafNode.__dict__)
+        node = Node(final_merged_distance)
+        for leaf in merged_cluster:
+            if leaf in cluster_node:
+                node.nodes.append(cluster_node[leaf].__dict__)
+            else:
+                LeafNode = Leaf(list(leaf))
+                node.nodes.append(LeafNode.__dict__)
+        node_height[final_merged_distance].append(node)
+        cluster_node[merged_cluster] = node
+    return node
 
 def single_link_distance(categorical_numerical_map, cluster1,cluster2):
     smallest_distance = float('inf')
@@ -120,10 +164,10 @@ def main():
     data = data.rename(columns={x: y for x, y in zip(data.columns, range(0, len(
         data.columns)))})  # rename columns with dimension value
     print(data)
-    dendrogram = agglomerative(categorial_numerical_map,data) #dendrogram has all level
+    node = agglomerative(categorial_numerical_map,data) #dendrogram has all level
 
-    all_heights = dendrogram.keys()
-    max_height = max(all_heights)
+    with open('output.txt', 'w') as file:
+        file.write(json.dumps(node.__dict__,indent=4, cls=NpEncoder))
 
     import pdb; pdb.set_trace()
     # kmeanspp(data,k)
