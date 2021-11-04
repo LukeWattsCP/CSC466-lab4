@@ -1,7 +1,8 @@
 import sys
+import math
 import pandas as pd
 import numpy as np
-from scipy.spatial import distance # shouldn't need to pip this as long as you have numpy
+from scipy.spatial import distance # shouldn't need to pip this as long as you have numpy, will replace with my own distance function
 import random
 
 
@@ -124,19 +125,27 @@ def main():
     n = len(sys.argv)
     filepath = None
     k = 0 # number of clusters desired
-    
-
 
     if n != 3:
         print("args error")
+        return
     else:
         filepath = sys.argv[1]
         k = int(sys.argv[2])
 
     data = pd.read_csv(filepath) # the points
 
-    data = data.rename(columns={x:y for x,y in zip(data.columns,range(0,len(data.columns)))}) # rename columns with dimension value 
+    r = open(filepath)
+    restAttrs = r.readline().split(',')
+    for ix, a in enumerate(restAttrs):
+        if int(a) != 1:
+            data = data.drop(data.columns[ix], axis=1)
     print(data)
+
+
+
+    data = data.rename(columns={x:y for x,y in zip(data.columns,range(0,len(data.columns)))}) # rename columns with dimension value 
+    # print(data)
     dimensions = len(data.columns)
 
 
@@ -154,6 +163,7 @@ def main():
 
     rehist = dfcent.copy(deep=True)
     prevSmallest = None
+    prevSSE = None
     
     while 1 == 1: # loop for assigning points to centroids, will include termination points as breaks
 
@@ -164,12 +174,12 @@ def main():
         # print(dfp2c)
 
         smallest = dfp2c.idxmin(axis=1)
-        print(smallest)
+        # print(smallest)
 
         data['centroid'] = smallest
         data.sort_values(by=['centroid'],inplace = True)
 
-        print(data)
+        # print(data)
 
         ccount = data.groupby(['centroid']).count()
         csum = data.groupby(['centroid']).sum()
@@ -181,30 +191,65 @@ def main():
 
         # for ci in range(0, len(centroids)):
         rehist = pd.concat([rehist,cdiv], axis=1)
-        print(rehist)
+        # print(rehist)
         cdiff = abs(dfcent - cdiv)
-        print(cdiff)
+        # print(cdiff)
+
+
+
+        data['centroidVal'] = data.apply(lambda r: centroidValue(r,centroids), axis = 1)
+        cv = pd.DataFrame(data['centroidVal'].to_list(), index=data.index)
+
+        # data = pd.concat([data,cv], axis=1)
+        data = data.drop(['centroidVal'],axis = 1)
+        # print(cv)
+
+        SSE = (data - cv).pow(2)
+        # print(SSE)
+        SSE = SSE.sum(axis = 1)
+        SSE['centroid'] = data['centroid']
+        SSE = SSE.groupby(['centroid']).sum()
+        # print(SSE)
+        # print(data)
+        
+
+
+
+
         dfcent = cdiv
-        print(dfcent)
+        # print(dfcent)
         centroids = [tuple(c) for c in dfcent.to_numpy()]
 
 
         if (loopcounter > 0) and (smallest.eq(prevSmallest.values).mean() > .99) : #if minimum reassignment of points between clusters
             loopcounter += 1
-            print(smallest)
-            print(prevSmallest)
-            print(smallest.eq(prevSmallest.values).mean())
+            # print(smallest)
+            # print(prevSmallest)
+            # print(smallest.eq(prevSmallest.values).mean())
             break
             
 
         if ((cdiff == 0).all(axis = 0)).all() == True: #if centroids recalculation produces minimal change
             loopcounter += 1
-            print(smallest.eq(prevSmallest.values).mean())
-
+            # print(smallest.eq(prevSmallest.values).mean())
             break
+
+        if (loopcounter > 0): #if minimum reassignment of points between clusters
+                SSEdiff = prevSSE - SSE
+                # SSEsum = 
+                # print(SSE)
+                # print(prevSSE)
+                # print(SSEdiff)
+                if 1 == 2:
+                    loopcounter += 1
+
+                    break
+
 
 
         
+
+        prevSSE = SSE
         prevSmallest = smallest
         loopcounter += 1
 
@@ -215,7 +260,10 @@ def main():
 
 
 
-
+def centroidValue(row, centroids):
+    for c in centroids:
+        if row['centroid'] == centroids.index(c):
+            return c
 
 
 
