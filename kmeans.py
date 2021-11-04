@@ -88,7 +88,7 @@ def hybrid_kpp(data,k):
         m1idx = csdata[str('m' + str(n - 2) + 'dst')].idxmax()  # index of 2nd centroid
         m1 = tuple(csdata.loc[m1idx][0:len(csdata.columns) - n + 1])  # 2nd centroid as tuple
         csdata = csdata.drop([m1idx]).reset_index(drop=True)  # removed from df
-        # # print(m1)
+        # print(m1)
         # print(csdata)
         del points[m1idx]  # removed from points list
         centroids.append(m1)  # added to centroids list
@@ -133,7 +133,7 @@ def main():
         filepath = sys.argv[1]
         k = int(sys.argv[2])
 
-    data = pd.read_csv(filepath) # the points
+    data = pd.read_csv(filepath, index_col=False) # the points
 
     r = open(filepath)
     restAttrs = r.readline().split(',')
@@ -145,7 +145,7 @@ def main():
 
 
     data = data.rename(columns={x:y for x,y in zip(data.columns,range(0,len(data.columns)))}) # rename columns with dimension value 
-    # print(data)
+
     dimensions = len(data.columns)
 
 
@@ -175,7 +175,7 @@ def main():
 
         smallest = dfp2c.idxmin(axis=1)
         # print(smallest)
-
+        dfp2c['centroid'] = smallest
         data['centroid'] = smallest
         data.sort_values(by=['centroid'],inplace = True)
 
@@ -204,11 +204,11 @@ def main():
         data = data.drop(['centroidVal'],axis = 1)
         # print(cv)
 
-        SSE = (data - cv).pow(2)
+        currSSE = (data - cv).pow(2)
         # print(SSE)
-        SSE = SSE.sum(axis = 1)
-        SSE['centroid'] = data['centroid']
-        SSE = SSE.groupby(['centroid']).sum()
+        currSSE = currSSE.sum(axis = 1)
+        currSSE['centroid'] = data['centroid']
+        currSSE = currSSE.groupby(['centroid']).sum()
         # print(SSE)
         # print(data)
         
@@ -235,7 +235,7 @@ def main():
             break
 
         if (loopcounter > 0): #if minimum reassignment of points between clusters
-                SSEdiff = prevSSE - SSE
+                SSEdiff = prevSSE - currSSE
                 # SSEsum = 
                 # print(SSE)
                 # print(prevSSE)
@@ -249,11 +249,22 @@ def main():
 
         
 
-        prevSSE = SSE
+        prevSSE = currSSE
         prevSmallest = smallest
         loopcounter += 1
 
-    print(centroids)
+    # print(data)
+    # print(dfp2c)
+    for c in centroids:
+        print("Cluster " + str(centroids.index(c))+":")
+        print("Center: " + str(c))
+        print("Max Dist. to Center: " + str(dfp2c.groupby(['centroid']).max()[centroids.index(c)][centroids.index(c)]) )
+        print("Min Dist. to Center: " + str(dfp2c.groupby(['centroid']).min()[centroids.index(c)][centroids.index(c)]) )
+        print("Avg Dist. to Center: " + str(dfp2c.groupby(['centroid']).mean()[centroids.index(c)][centroids.index(c)]) )
+        print(str(dfp2c.groupby(['centroid']).count()[centroids.index(c)][centroids.index(c)])+" Points:")
+        centPoints = data.loc[data['centroid'] == centroids.index(c)]
+        centPoints = centPoints.drop(['centroid'], axis = 1).sort_index()
+        print( centPoints.to_string() )
 
     print("End")
 
