@@ -42,7 +42,6 @@ def agglomerative(categorical_numerical_map, data):
     node_height = defaultdict(list)
     for cluster in clusters:
         cluster_distance[tuple(cluster)] = 0
-    import pdb; pdb.set_trace()
     # import pdb; pdb.set_trace()
     while len(clusters) > 1:
         distance_map = {}
@@ -85,16 +84,6 @@ def agglomerative(categorical_numerical_map, data):
         final_merged_distance = distance + cluster_distance.get(target_cluster,0)
         dendrogram[final_merged_distance].append(merged_cluster)
 
-        # if final_merged_distance not in node_height:
-        #     node = Node(final_merged_distance)
-        #     for leaf in merged_cluster:
-        #         LeafNode = Leaf(list(leaf))
-        #         node.nodes.append(LeafNode.__dict__)
-        #     node_height[final_merged_distance] = node
-        # else:
-        #     for leaf in merged_cluster:
-        #         LeafNode = Leaf(leaf)
-        #         node_height[final_merged_distance].nodes.append(LeafNode.__dict__)
         node = Node(final_merged_distance)
         for leaf in merged_cluster:
             if leaf in cluster_node:
@@ -104,6 +93,8 @@ def agglomerative(categorical_numerical_map, data):
                 node.nodes.append(LeafNode.__dict__)
         node_height[final_merged_distance].append(node)
         cluster_node[merged_cluster] = node
+    # import pdb; pdb.set_trace()
+    node.type = 'Root'
     return node
 
 def single_link_distance(categorical_numerical_map, cluster1,cluster2):
@@ -132,22 +123,33 @@ def flatten(x, res):
         else:
             res.append(value)
 
+def get_alpha_cluster(alpha, root,result):
+    if root['type'] == 'Leaf':
+        result.append(root)
+        return
+    current_height = root['height']
+    if current_height < alpha:
+        result.append(root)
+        return
+
+    for node in root['nodes']:
+        if type(node) == dict:
+            get_alpha_cluster(alpha, node, result)
+        else:
+            get_alpha_cluster(alpha, node.__dict__,result)
 
 def main():
     n = len(sys.argv)
     filepath = None
     k = 0  # number of clusters desired
     alpha = 0
+    filepath = sys.argv[1]
 
-    if n != 3:
-        print("args error")
-    else:
-        filepath = sys.argv[1]
-        k = int(sys.argv[2])
-        try:
-            alpha = sys.argv[3]
-        except:
-            pass
+    try:
+        alpha = float(sys.argv[2])
+    except:
+        alpha = 0
+
 
     fileReader = open(filepath, 'r')
     line1 = fileReader.readline().strip('\n') #get first line but strip down the \n
@@ -164,12 +166,15 @@ def main():
     data = data.rename(columns={x: y for x, y in zip(data.columns, range(0, len(
         data.columns)))})  # rename columns with dimension value
     print(data)
-    node = agglomerative(categorial_numerical_map,data) #dendrogram has all level
+    entire_hiearchy = agglomerative(categorial_numerical_map,data) #dendrogram has all level
+    alpha_cut_off_clusters = []
+    get_alpha_cluster(alpha, entire_hiearchy.__dict__, alpha_cut_off_clusters)
+    # import pdb; pdb.set_trace()
 
-    with open('output.txt', 'w') as file:
-        file.write(json.dumps(node.__dict__,indent=4, cls=NpEncoder))
+    with open('output.json', 'w') as file:
+        file.write(json.dumps(entire_hiearchy.__dict__,indent=4, cls=NpEncoder))
 
-    import pdb; pdb.set_trace()
+    # import pdb; pdb.set_trace()
     # kmeanspp(data,k)
 
 
