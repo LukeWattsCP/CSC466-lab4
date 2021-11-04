@@ -1,22 +1,43 @@
 import sys
 import pandas as pd
 from distance_helper import eucledian_distance
+import numpy as np
 import copy
+from itertools import groupby
+
+from collections import defaultdict
+import collections
+
+
 def agglomerative(categorical_numerical_map, data):
     csdata = data.copy(deep = True) # copying original dataframe, this copy will be used for centroid selection while the original will be used for clustering
-
-    clusters = [[tuple(x)] for x in csdata.to_numpy()] # converting points to tuples for distance calculations
-    dendrogram = {}
+    clusters = [tuple(x) for x in csdata.to_numpy()] # converting points to tuples for distance calculations
+    clusters = [tuple(j) for i, j in groupby(clusters)] #combining points that are the same the be within the same cluster to begin with
+    dendrogram = defaultdict(list)
+    dendrogram[0] = tuple(clusters)
+    cluster_distance = {}
+    for cluster in clusters:
+        cluster_distance[tuple(cluster)] = 0
+    import pdb; pdb.set_trace()
     # import pdb; pdb.set_trace()
     while len(clusters) > 1:
         distance_map = {}
-        for index, point in enumerate(clusters):
+        for index, cluster in enumerate(clusters):
             #edge case of last one we dont need to compute the distance of the last tuple
             if index == len(clusters) - 1:
                 break
             # import pdb; pdb.set_trace()
             other_clusters = clusters[index+1:]
-            distance_from_other_cluster = [single_link_distance(categorical_numerical_map,point,c2) for c2 in other_clusters] #compute the distance from current cluster to all other cluster
+            flatten_points_c1 = []
+            flatten(cluster, flatten_points_c1)
+            flatten_points_c1 = tuple(flatten_points_c1)
+            distance_from_other_cluster = []
+            for c2 in other_clusters:
+                flattened_points_c2 = []
+                flatten(c2, flattened_points_c2)
+                flattened_points_c2 = tuple(flattened_points_c2)
+                distance_from_other_cluster.append(single_link_distance(categorical_numerical_map, flatten_points_c1, flattened_points_c2 ))
+
             smallest_distance = min(distance_from_other_cluster) #obtain the smallest distance
             smallest_distance_index = distance_from_other_cluster.index(smallest_distance) #get the index of that smallest distance
             distance_map[index] = (smallest_distance, smallest_distance_index + index + 1) #must cast cluster to tuple in order to hash
@@ -26,17 +47,19 @@ def agglomerative(categorical_numerical_map, data):
         final_smallest_distance_index = min(distance_map, key=distance_map.get)
         final_smallest_distance_value = distance_map[final_smallest_distance_index] #this value contains the tuple of (distance, index to this cluster)
         distance = final_smallest_distance_value[0]
+        # import pdb; pdb.set_trace()
         index_target_cluster = final_smallest_distance_value[1]
-        merged_cluster = clusters[final_smallest_distance_index] + clusters[index_target_cluster]
+        target_cluster = clusters[index_target_cluster]
+        current_cluster = clusters[final_smallest_distance_index]
+        merged_cluster = (target_cluster, current_cluster)
         # import pdb; pdb.set_trace()
-        clusters.remove(clusters[index_target_cluster]) #removing the one that we're gonna merge
-        clusters.remove(clusters[final_smallest_distance_index]) #must cast it to list since it's currently a tuple
-        clusters.append(list(merged_cluster)) #add the merged cluster in
-        clusters_copy = copy.deepcopy(clusters) #need to do this for memory issue
-        dendrogram[distance] = clusters_copy
+        remove_cluster(clusters,target_cluster) #removing the one that we're gonna merge
+        remove_cluster(clusters, current_cluster) #must cast it to list since it's currently a tuple
+        clusters.append(merged_cluster) #add the merged cluster in
+        cluster_distance[merged_cluster] = distance
+        final_merged_distance = distance + cluster_distance.get(target_cluster,0)
+        dendrogram[final_merged_distance].append(merged_cluster)
 
-        # import pdb; pdb.set_trace()
-            # distance_map[value] =
     return dendrogram
 
 def single_link_distance(categorical_numerical_map, cluster1,cluster2):
@@ -48,6 +71,22 @@ def single_link_distance(categorical_numerical_map, cluster1,cluster2):
                 smallest_distance = distance_p1_p2
     return smallest_distance
 
+def remove_cluster(clusters,target):
+    ind = 0
+    size = len(clusters)
+    while ind != size and not np.array_equal(clusters[ind],target):
+        ind += 1
+    if ind != size:
+        clusters.pop(ind)
+    else:
+        raise ValueError('target not found in cluster.')
+
+def flatten(x, res):
+    for value in x:
+        if type(value[0]) == tuple:
+            flatten(value,res)
+        else:
+            res.append(value)
 
 
 def main():
@@ -81,9 +120,18 @@ def main():
     data = data.rename(columns={x: y for x, y in zip(data.columns, range(0, len(
         data.columns)))})  # rename columns with dimension value
     print(data)
-    dendrogram = agglomerative(categorial_numerical_map,data)
+    dendrogram = agglomerative(categorial_numerical_map,data) #dendrogram has all level
+
+    all_heights = dendrogram.keys()
+    max_height = max(all_heights)
+
     import pdb; pdb.set_trace()
     # kmeanspp(data,k)
 
+
 if __name__ == '__main__':
+#     res = []
+#     flatten((((5, 14, 1),), ((5, 15, 1))), res
+# )
+
     main()
