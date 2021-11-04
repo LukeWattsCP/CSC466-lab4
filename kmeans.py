@@ -137,7 +137,7 @@ def main():
 
     data = data.rename(columns={x:y for x,y in zip(data.columns,range(0,len(data.columns)))}) # rename columns with dimension value 
     print(data)
-    dimensions = len(data)
+    dimensions = len(data.columns)
 
 
 
@@ -153,6 +153,7 @@ def main():
     loopcounter = 0
 
     rehist = dfcent.copy(deep=True)
+    prevSmallest = None
     
     while 1 == 1: # loop for assigning points to centroids, will include termination points as breaks
 
@@ -160,12 +161,12 @@ def main():
         distp2c = distance.cdist(points,centroids, metric='euclidean')
         # print(p2cmin)
         dfp2c = pd.DataFrame(distp2c)
-        print(dfp2c)
+        # print(dfp2c)
 
-        smallestDist = dfp2c.idxmin(axis=1)
-        print(smallestDist)
+        smallest = dfp2c.idxmin(axis=1)
+        print(smallest)
 
-        data['centroid'] = smallestDist
+        data['centroid'] = smallest
         data.sort_values(by=['centroid'],inplace = True)
 
         print(data)
@@ -174,20 +175,42 @@ def main():
         csum = data.groupby(['centroid']).sum()
         cdiv = csum/ccount
 
-        print(ccount)
-        print(csum)
-        print(cdiv)
+        # print(ccount)
+        # print(csum)
+        # print(cdiv)
 
         # for ci in range(0, len(centroids)):
         rehist = pd.concat([rehist,cdiv], axis=1)
         print(rehist)
+        cdiff = abs(dfcent - cdiv)
+        print(cdiff)
         dfcent = cdiv
-            
-        
+        print(dfcent)
+        centroids = [tuple(c) for c in dfcent.to_numpy()]
 
+
+        if (loopcounter > 0) and (smallest.eq(prevSmallest.values).mean() > .99) : #if minimum reassignment of points between clusters
+            loopcounter += 1
+            print(smallest)
+            print(prevSmallest)
+            print(smallest.eq(prevSmallest.values).mean())
+            break
+            
+
+        if ((cdiff == 0).all(axis = 0)).all() == True: #if centroids recalculation produces minimal change
+            loopcounter += 1
+            print(smallest.eq(prevSmallest.values).mean())
+
+            break
+
+
+        
+        prevSmallest = smallest
         loopcounter += 1
 
+    print(centroids)
 
+    print("End")
 
 
 
