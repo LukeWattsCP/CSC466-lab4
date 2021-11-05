@@ -2,7 +2,7 @@ def eucledian_distance(categorical_numerical_map, current_data: tuple, other_dat
     i = 0
     distance_total = 0
     while i < len(current_data):
-        categorical = categorical_numerical_map[i] == 'categorical'
+        categorical = False
         if not categorical: #means numeric
 
             try:

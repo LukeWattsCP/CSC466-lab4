@@ -179,14 +179,17 @@ def main():
     line1 = fileReader.readline().strip('\n') #get first line but strip down the \n
     fileReader.close() #close since it was open
     categorial_numerical_map = {}
+
+
+    data = pd.read_csv(filepath, index_col=False)  # the points
+
     for index, value in enumerate(line1.split(',')):
         if value == '0':
             categorial_numerical_map[index] = 'categorical'
+            data = data.drop(data.columns[index], axis=1)
         else:
             categorial_numerical_map[index] = 'numerical'
-
-    data = pd.read_csv(filepath)  # the points
-
+    import pdb; pdb.set_trace()
     data = data.rename(columns={x: y for x, y in zip(data.columns, range(0, len(
         data.columns)))})  # rename columns with dimension value
     # print(data)

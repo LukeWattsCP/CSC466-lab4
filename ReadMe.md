@@ -5,7 +5,7 @@ pip3 install -r requirements.txt
 ```
 #hclustering.py
 ```bash
-python3 hcluster <csvfile> <distance_method> <alpha>
+python3 hcluster.py <csvfile> <distance_method> <alpha>
 <csvfile> = dataset path that we want to use 
 <distance_method> -> 1 = singly link
                   -> 2 = complete link
