@@ -29,7 +29,7 @@ class Node:
         self.height = height
         self.nodes = []
 
-def agglomerative(categorical_numerical_map, data):
+def agglomerative(categorical_numerical_map, data, distance_method):
     csdata = data.copy(deep = True) # copying original dataframe, this copy will be used for centroid selection while the original will be used for clustering
     clusters = [tuple(x) for x in csdata.to_numpy()] # converting points to tuples for distance calculations
     clusters = [tuple(j) for i, j in groupby(clusters)] #combining points that are the same the be within the same cluster to begin with
@@ -59,7 +59,12 @@ def agglomerative(categorical_numerical_map, data):
                 flattened_points_c2 = []
                 flatten(c2, flattened_points_c2)
                 flattened_points_c2 = tuple(flattened_points_c2)
-                distance_from_other_cluster.append(single_link_distance(categorical_numerical_map, flatten_points_c1, flattened_points_c2 ))
+                if distance_method == 1:
+                    distance_from_other_cluster.append(single_link_distance(categorical_numerical_map, flatten_points_c1, flattened_points_c2 ))
+                elif distance_method == 2:
+                    distance_from_other_cluster.append(complete_link_distance(categorical_numerical_map, flatten_points_c1, flattened_points_c2 ))
+                elif distance_method == 3:
+                    distance_from_other_cluster.append(average_link_distance(categorical_numerical_map, flatten_points_c1, flattened_points_c2 ))
 
             smallest_distance = min(distance_from_other_cluster) #obtain the smallest distance
             smallest_distance_index = distance_from_other_cluster.index(smallest_distance) #get the index of that smallest distance
@@ -106,6 +111,22 @@ def single_link_distance(categorical_numerical_map, cluster1,cluster2):
                 smallest_distance = distance_p1_p2
     return smallest_distance
 
+def complete_link_distance(categorical_numerical_map, cluster1,cluster2):
+    biggest_distance = 0
+    for point in cluster1:
+        for point2 in cluster2:
+            distance_p1_p2 = eucledian_distance(categorical_numerical_map, point, point2)
+            if distance_p1_p2 > biggest_distance:
+                biggest_distance = distance_p1_p2
+    return biggest_distance
+
+def average_link_distance(categorical_numerical_map, cluster1, cluster2):
+    average_distance = 0
+    for point in cluster1:
+        for point2 in cluster2:
+            average_distance += eucledian_distance(categorical_numerical_map, point, point2)
+    return average_distance / (len(cluster1) * len(cluster2))
+
 def remove_cluster(clusters,target):
     ind = 0
     size = len(clusters)
@@ -144,9 +165,10 @@ def main():
     k = 0  # number of clusters desired
     alpha = 0
     filepath = sys.argv[1]
+    distance_method = int(sys.argv[2])
 
     try:
-        alpha = float(sys.argv[2])
+        alpha = float(sys.argv[3])
     except:
         alpha = 0
 
@@ -165,13 +187,21 @@ def main():
 
     data = data.rename(columns={x: y for x, y in zip(data.columns, range(0, len(
         data.columns)))})  # rename columns with dimension value
-    print(data)
-    entire_hiearchy = agglomerative(categorial_numerical_map,data) #dendrogram has all level
-    alpha_cut_off_clusters = []
-    get_alpha_cluster(alpha, entire_hiearchy.__dict__, alpha_cut_off_clusters)
+    # print(data)
+
+
+    entire_hiearchy = agglomerative(categorial_numerical_map,data, distance_method) #dendrogram has all level
+    if alpha != 0:
+        alpha_cut_off_clusters = []
+        get_alpha_cluster(alpha, entire_hiearchy.__dict__, alpha_cut_off_clusters)
+        with open(filepath.replace('.csv', '') + '_output_alpha.txt', 'w') as file:
+            file.write('//We end up with {0} clusters with alpha value of {1} \n'.format(len(alpha_cut_off_clusters),alpha))
+            for index, cluster in enumerate(alpha_cut_off_clusters):
+                file.write('//********************Cluster {0}*********************\n'.format(index + 1))
+                file.write(json.dumps(cluster, indent=4, cls=NpEncoder) + '\n')
     # import pdb; pdb.set_trace()
 
-    with open('output.json', 'w') as file:
+    with open(filepath.replace('.csv', '') + '_output.json', 'w') as file:
         file.write(json.dumps(entire_hiearchy.__dict__,indent=4, cls=NpEncoder))
 
     # import pdb; pdb.set_trace()
