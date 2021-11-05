@@ -2,7 +2,8 @@ import sys
 import numpy as np
 import pandas as pd
 
-
+def db_scan(episilon, minpoints):
+    pass
 
 def main():
     
@@ -18,6 +19,7 @@ def main():
     print(data)
 
     visited = pd.DataFrame({'visited':([0] * len(data))})
+    import pdb; pdb.set_trace()
     print(visited)
 
 
