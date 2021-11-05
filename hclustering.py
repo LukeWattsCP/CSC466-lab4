@@ -32,9 +32,11 @@ class Node:
 def agglomerative(categorical_numerical_map, data, distance_method):
     csdata = data.copy(deep = True) # copying original dataframe, this copy will be used for centroid selection while the original will be used for clustering
     clusters = [tuple(x) for x in csdata.to_numpy()] # converting points to tuples for distance calculations
+    clusters = sorted(clusters)
     clusters = [tuple(j) for i, j in groupby(clusters)] #combining points that are the same the be within the same cluster to begin with
     dendrogram = defaultdict(list)
     dendrogram[0] = tuple(clusters)
+    # import pdb; pdb.set_trace()
 
     cluster_distance = {}
 
@@ -70,7 +72,7 @@ def agglomerative(categorical_numerical_map, data, distance_method):
             smallest_distance_index = distance_from_other_cluster.index(smallest_distance) #get the index of that smallest distance
             distance_map[index] = (smallest_distance, smallest_distance_index + index + 1) #must cast cluster to tuple in order to hash
 
-        #this contains the smallest of the smallest distance computed from all clusters
+        #this contains the smallest of the computed distance from all clusters
         # import pdb; pdb.set_trace()
         final_smallest_distance_index = min(distance_map, key=distance_map.get)
         final_smallest_distance_value = distance_map[final_smallest_distance_index] #this value contains the tuple of (distance, index to this cluster)
