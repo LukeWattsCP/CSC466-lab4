@@ -7,7 +7,7 @@ pip3 install -r requirements.txt
 ```bash
 python3 kmeans.py <csvfile> <k> <mode>
 <csvfile> = dataset path that we want to use 
-<k> the number of clusters desired
+<k> = the number of clusters desired
 <mode>          -> 0 = kmeans (randomly selected centroids)
                 -> 1 = kmeans hybrid (first centroid is random, 2nd to k are selected using k++ styled distance measures)
                 -> 2 = kmeans++ (centroids slected using distances)
@@ -31,10 +31,22 @@ python3 hcluster.py <csvfile> <distance_method> <alpha>
 <distance_method> -> 1 = singly link
                   -> 2 = complete link
                   -> 3 = average link
-<alpha> the threshold value (this could be optional)
+<alpha> = the threshold value (this could be optional)
 
 OUTPUT: 
 if alpha is provided:
     <csvfile>_output_alpha.txt --> this gives information on how many clusters we will have after we cut off at that threshold off the dendrogram. Also list what each cluster contain and its height and etc.
     <csvfile>_output.json --> gives the whole entire dendrogram (hiearchy)
+```
+
+
+#dbscan.py
+```bash
+python3 dbscan.py <csvfile> <epsilon> <minpoints>
+<csvfile> = dataset path that we want to use 
+<epsilon> = radius value from point to form neighborhood
+<minpoints> = the minimum number of points accessible to a point within distance epsilon to form a neighborhood
+
+OUTPUT: 
+TODO
 ```
