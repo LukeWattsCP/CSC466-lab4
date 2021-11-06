@@ -199,6 +199,7 @@ def evaluation(clusters):
         average_distance = sum(distance_to_center) / len(distance_to_center)
         print('********************Cluster {0}*********************'.format(index + 1))
         print('There is {0} points in total'.format(len(all_points)))
+        print('Cluster Height: ', cluster['height'])
         print('Points: ', all_points)
         print('Center: ', tuple(center))
         print('Max distance to center: ', max_distance)
@@ -241,15 +242,19 @@ def main():
 
 
     entire_hiearchy = agglomerative(categorial_numerical_map,data, distance_method) #dendrogram has all level
-    alpha_cut_off_clusters = []
-    get_alpha_cluster(alpha, entire_hiearchy.__dict__, alpha_cut_off_clusters)
-    print('\n\nWith an threshold value of {0}, we have:\n\n'.format(alpha))
-    evaluation(alpha_cut_off_clusters)
-    with open(filepath.replace('.csv', '') + '_output_alpha.txt', 'w') as file:
-        file.write('//We end up with {0} clusters with alpha value of {1} \n'.format(len(alpha_cut_off_clusters),alpha))
-        for index, cluster in enumerate(alpha_cut_off_clusters):
-            file.write('//********************Cluster {0}*********************\n'.format(index + 1))
-            file.write(json.dumps(cluster, indent=4, cls=NpEncoder) + '\n')
+    if alpha != 0:
+        alpha_cut_off_clusters = []
+        get_alpha_cluster(alpha, entire_hiearchy.__dict__, alpha_cut_off_clusters)
+        print('\n\nWith an threshold value of {0}, we have {1} total clusters:\n\n'.format(alpha, len(alpha_cut_off_clusters)))
+        evaluation(alpha_cut_off_clusters)
+        with open(filepath.replace('.csv', '') + '_output_alpha.txt', 'w') as file:
+            file.write('//We end up with {0} clusters with alpha value of {1} \n'.format(len(alpha_cut_off_clusters),alpha))
+            for index, cluster in enumerate(alpha_cut_off_clusters):
+                file.write('//********************Cluster {0}*********************\n'.format(index + 1))
+                file.write(json.dumps(cluster, indent=4, cls=NpEncoder) + '\n')
+    else:
+        print('\n\nWith an threshold value of 0, we have 1 singular cluster!\n\n')
+        evaluation([entire_hiearchy.__dict__])
 
 
     # import pdb; pdb.set_trace()
