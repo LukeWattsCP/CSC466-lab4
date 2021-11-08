@@ -4,7 +4,8 @@ import numpy as np
 from pandas.core.frame import DataFrame
 import random
 
-
+import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D
 
 
 def kmeanspp(data, k):
@@ -144,7 +145,7 @@ def kmeansvanilla(data, k):
         csdata = csdata.drop([m0indx]).reset_index(drop=True)  # removed from df
         centroids.append(m0)
         n += 1
-    print(centroids)
+    # print(centroids)
 
     return centroids
 
@@ -169,7 +170,7 @@ def main():
     for ix, a in enumerate(restAttrs):
         if int(a) != 1:
             data = data.drop(data.columns[ix], axis=1)
-    # print(data)
+    print(data)
 
 
 
@@ -286,7 +287,7 @@ def main():
         prevSmallest = smallest
         loopcounter += 1
 
-    # print(data)
+    print(data)
     # print(dfp2c)
     print("Clustering finished, number of centroid recalculations performed: " + str(loopcounter))
     for c in centroids:
@@ -300,7 +301,26 @@ def main():
         centPoints = centPoints.drop(['centroid'], axis = 1).sort_index()
         print( centPoints.to_string() )
 
-    print("End")
+
+    data.columns = ['x','y', 'z', 'centroid']
+    print(data)
+
+    # # 2D
+    # groups = data.groupby('centroid')
+    # fig, ax = plt.subplots()
+    # for name, group in groups:
+    #     ax.plot(group.x, group.y, group.z, marker='o', linestyle='', ms=12, label=name)
+    # ax.legend()
+
+    # plt.show()
+
+    # # 3D
+    # fig = plt.figure(figsize=(10, 10))
+    # ax = plt.axes(projection='3d')
+    # ax.scatter3D(data['x'], data['y'], data['z'], c=data['centroid'])
+    # plt.show()
+
+    # print("End")
 
 
 
