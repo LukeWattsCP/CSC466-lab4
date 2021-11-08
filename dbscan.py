@@ -46,13 +46,18 @@ def main():
     
     if len(sys.argv) == 4:
         filepath = sys.argv[1]
-        epsilon = int(sys.argv[2])
+        epsilon = float(sys.argv[2])
         numpoints = int(sys.argv[3])
     else:
         print("Invalid arguments, please see README")
         return
 
     data = pd.read_csv(filepath, index_col=False) # the points
+    r = open(filepath)
+    restAttrs = r.readline().split(',')
+    for ix, a in enumerate(restAttrs):
+        if int(a) != 1:
+            data = data.drop(data.columns[ix], axis=1)
     data = data.rename(columns={x:y for x,y in zip(data.columns,range(0,len(data.columns)))}) # rename columns with dimension value 
 
     # print(data)
