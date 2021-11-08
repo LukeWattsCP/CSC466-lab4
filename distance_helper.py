@@ -1,4 +1,4 @@
-def eucledian_distance(categorical_numerical_map, current_data: tuple, other_data: tuple):
+def eucledian_distance(current_data: tuple, other_data: tuple):
     i = 0
     distance_total = 0
     while i < len(current_data):

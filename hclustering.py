@@ -21,7 +21,7 @@ class Leaf:
     def __init__(self,data):
         self.type = 'Leaf'
         self.height = 0
-        self.data = ','.join([str(a) for a in data])
+        self.data = ([str(a) for a in data])
 
 class Node:
     def __init__(self,height):
@@ -108,7 +108,7 @@ def single_link_distance(categorical_numerical_map, cluster1,cluster2):
     smallest_distance = float('inf')
     for point in cluster1:
         for point2 in cluster2:
-            distance_p1_p2 = eucledian_distance(categorical_numerical_map, point, point2)
+            distance_p1_p2 = eucledian_distance(point, point2)
             if distance_p1_p2 < smallest_distance:
                 smallest_distance = distance_p1_p2
     return smallest_distance
@@ -117,7 +117,7 @@ def complete_link_distance(categorical_numerical_map, cluster1,cluster2):
     biggest_distance = 0
     for point in cluster1:
         for point2 in cluster2:
-            distance_p1_p2 = eucledian_distance(categorical_numerical_map, point, point2)
+            distance_p1_p2 = eucledian_distance(point, point2)
             if distance_p1_p2 > biggest_distance:
                 biggest_distance = distance_p1_p2
     return biggest_distance
@@ -126,7 +126,7 @@ def average_link_distance(categorical_numerical_map, cluster1, cluster2):
     average_distance = 0
     for point in cluster1:
         for point2 in cluster2:
-            average_distance += eucledian_distance(categorical_numerical_map, point, point2)
+            average_distance += eucledian_distance(point, point2)
     return average_distance / (len(cluster1) * len(cluster2))
 
 def remove_cluster(clusters,target):
@@ -161,9 +161,56 @@ def get_alpha_cluster(alpha, root,result):
         else:
             get_alpha_cluster(alpha, node.__dict__,result)
 
+
+
+
+def get_all_points(cluster, result):
+    if cluster['type'] == 'Leaf':
+        datas = cluster['data']
+        for data in datas:
+            result.append(eval(data))
+        return
+
+    for node in cluster['nodes']:
+        get_all_points(node, result)
+
+
+# print("Cluster " + str(centroids.index(c))+":")
+#         print("Center: " + str(c))
+#         print("Max Dist. to Center: " + str(dfp2c.groupby(['centroid']).max()[centroids.index(c)][centroids.index(c)]) )
+#         print("Min Dist. to Center: " + str(dfp2c.groupby(['centroid']).min()[centroids.index(c)][centroids.index(c)]) )
+#         print("Avg Dist. to Center: " + str(dfp2c.groupby(['ce
+def compute_center(points):
+    center = []
+    for i in range(0, len(points[0])):
+        all_i = [a[i] for a in points]
+        center.append(sum(all_i)/len(all_i))
+        # import pdb; pdb.set_trace()
+    return tuple(center)
+
+def evaluation(clusters):
+    for index, cluster in enumerate(clusters):
+        all_points = []
+        get_all_points(cluster, all_points)
+        center = compute_center(all_points)
+        distance_to_center = [eucledian_distance(point,center) for point in all_points]
+        max_distance = max(distance_to_center)
+        min_distance = min(distance_to_center)
+        average_distance = sum(distance_to_center) / len(distance_to_center)
+        print('********************Cluster {0}*********************'.format(index + 1))
+        print('There is {0} points in total'.format(len(all_points)))
+        print('Cluster Height: ', cluster['height'])
+        print('Points: ', all_points)
+        print('Center: ', tuple(center))
+        print('Max distance to center: ', max_distance)
+        print('Min distance to center: ', min_distance)
+        print('Average distance to center: ', average_distance)
+
+
+
+
 def main():
     n = len(sys.argv)
-    filepath = None
     k = 0  # number of clusters desired
     alpha = 0
     filepath = sys.argv[1]
@@ -189,7 +236,6 @@ def main():
             data = data.drop(data.columns[index], axis=1)
         else:
             categorial_numerical_map[index] = 'numerical'
-    import pdb; pdb.set_trace()
     data = data.rename(columns={x: y for x, y in zip(data.columns, range(0, len(
         data.columns)))})  # rename columns with dimension value
     # print(data)
@@ -199,11 +245,18 @@ def main():
     if alpha != 0:
         alpha_cut_off_clusters = []
         get_alpha_cluster(alpha, entire_hiearchy.__dict__, alpha_cut_off_clusters)
+        print('\n\nWith an threshold value of {0}, we have {1} total clusters:\n\n'.format(alpha, len(alpha_cut_off_clusters)))
+        evaluation(alpha_cut_off_clusters)
         with open(filepath.replace('.csv', '') + '_output_alpha.txt', 'w') as file:
             file.write('//We end up with {0} clusters with alpha value of {1} \n'.format(len(alpha_cut_off_clusters),alpha))
             for index, cluster in enumerate(alpha_cut_off_clusters):
                 file.write('//********************Cluster {0}*********************\n'.format(index + 1))
                 file.write(json.dumps(cluster, indent=4, cls=NpEncoder) + '\n')
+    else:
+        print('\n\nWith an threshold value of 0, we have 1 singular cluster!\n\n')
+        evaluation([entire_hiearchy.__dict__])
+
+
     # import pdb; pdb.set_trace()
 
     with open(filepath.replace('.csv', '') + '_output.json', 'w') as file:

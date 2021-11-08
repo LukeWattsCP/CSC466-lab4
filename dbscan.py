@@ -3,7 +3,8 @@ import numpy as np
 import pandas as pd
 from pandas.io.formats.format import return_docstring
 
-
+def db_scan(episilon, minpoints):
+    pass
 
 def coreCluster(x,data,core,distArray,clusterCount,epsilon,numpoints):
     if pd.isnull(core.loc[x.name]['cluster']):
