@@ -54,5 +54,14 @@ python3 dbscan.py <csvfile> <epsilon> <minpoints>
 <minpoints> = the minimum number of points accessible to a point within distance epsilon to form a neighborhood
 
 OUTPUT: 
-TODO
+For each cluster:
+    The number of the cluster.
+    The centroid location of the cluster in n-dimensions.
+    The points that have the minimum, maximum, and average distance from the cluster centroid.
+    The number of points in the cluster.
+    For each point in the cluster:
+        The location of the point in n-dimensions.
+If outliers are detected:
+    The number of outliers.
+    The percentage of the dataset composed of outliers.
 ```
