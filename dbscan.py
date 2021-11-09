@@ -3,6 +3,7 @@ import numpy as np
 import pandas as pd
 from pandas.io.formats.format import return_docstring
 from distance_helper import eucledian_distance
+import copy
 
 # import matplotlib.pyplot as plt
 # from mpl_toolkits.mplot3d import Axes3D
@@ -45,6 +46,10 @@ def densityConnected(x,data,core,distArray,clusterCount,epsilon,numpoints): # ma
             
 
     return
+
+def most_common(lst):
+    return max(set(lst), key=lst.count)
+
 def main():
     
     if len(sys.argv) == 4:
@@ -56,6 +61,15 @@ def main():
         return
 
     data = pd.read_csv(filepath, index_col=False) # the points
+    class_point = {}
+    # hard coded for iris to use classifier
+    if filepath == 'iris.csv':
+        data_copy = copy.deepcopy(data)
+        copy_points = [tuple(x) for x in data_copy.to_numpy()]
+
+        for row in copy_points:
+            class_point[row[0:4]] = row[4]
+
     r = open(filepath)
     restAttrs = r.readline().split(',')
     for ix, a in enumerate(restAttrs):
@@ -126,6 +140,8 @@ def main():
     centroid_of_clusters = []
     centroid_distances = []
 
+
+
     for c in clusters:
 
         if c != -1:
@@ -134,8 +150,22 @@ def main():
             clusteri = clusteri.drop(['visited', 'type', 'cluster'], axis = 1)
             centroid = tuple(clusteri.mean())
 
-            #added for compactness calculation
+            #added for compactness
             centroid_of_clusters.append(centroid)
+
+            #added for ground truth
+            # import pdb; pdb.set_trace()
+            all_points = np.array(clusteri)
+            cluster_classifiers = [class_point[tuple(x)] for x in all_points]
+            most_common_class = most_common(cluster_classifiers)
+            times_occur = cluster_classifiers.count(most_common_class)
+            print('The most common classifier is: ', most_common_class)
+            print('There are {0} total items in this cluster'.format(len(all_points)))
+            print('There are {0} items with the most common classifier'.format(times_occur))
+            print('The ratio of accuracy is:{0} % '.format(times_occur / len(all_points) * 100))
+
+
+
 
             print("Center: " + str(centroid))
             centroid = pd.DataFrame([centroid])
@@ -147,6 +177,11 @@ def main():
             clusteri = clusteri.drop(['visited', 'cluster'], axis = 1)
             print(str(len(clusteri)) + " Points:")
             print(clusteri.to_string())
+            # import pdb; pdb.set_trace()
+
+
+
+
 
             #added for compact ness
             radius_clusters.append(centDists.max())
@@ -160,7 +195,7 @@ def main():
         centroid_distances = centroid_distances + distance_from_centroid_to_centroid
 
 
-
+    # import pdb; pdb.set_trace()
     average_centroid_distance = sum(centroid_distances) / len(centroid_distances)
     average_radius = sum(radius_clusters) / len(radius_clusters)
     ratio = average_centroid_distance / average_radius
