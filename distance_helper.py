@@ -1,8 +1,9 @@
-def eucledian_distance(current_data: tuple, other_data: tuple):
+def eucledian_distance(categorical_map,current_data: tuple, other_data: tuple):
     i = 0
     distance_total = 0
+    # import pdb; pdb.set_trace()
     while i < len(current_data):
-        categorical = False
+        categorical = categorical_map[i]
         if not categorical: #means numeric
 
             try:
@@ -12,14 +13,14 @@ def eucledian_distance(current_data: tuple, other_data: tuple):
             except: #this is in case there's an empty data point, so we simply just ignore and continue computing distance
                 i += 1
                 continue
-        else: #for categorical
-            #just compute it using ascii value of each word and add them up
-            current_value = list(current_data[i])
-            other_value = list(other_data[i])
-            # import pdb; pdb.set_trace()
-            similarity = jaccard_similarity(current_value, other_value)
-            distance = 1 - similarity
-            distance_total = distance_total + distance
+        # else: #for categorical
+        #     #just compute it using ascii value of each word and add them up
+        #     current_value = list(current_data[i])
+        #     other_value = list(other_data[i])
+        #     # import pdb; pdb.set_trace()
+        #     similarity = jaccard_similarity(current_value, other_value)
+        #     distance = 1 - similarity
+        #     distance_total = distance_total + distance
         i += 1
     return distance_total ** (0.5)
 

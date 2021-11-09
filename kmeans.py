@@ -302,9 +302,9 @@ def main():
         print( centPoints.to_string() )
 
 
-    data.columns = ['x','y', 'z', 'centroid']
-    print(data)
-
+    # data.columns = ['x','y', 'z', 'centroid']
+    # print(data)
+    #
     # # 2D
     # groups = data.groupby('centroid')
     # fig, ax = plt.subplots()

@@ -25,7 +25,7 @@ def coreCluster(x,data,core,distArray,clusterCount,epsilon,numpoints):
     return
 
 def densityConnected(x,data,core,distArray,clusterCount,epsilon,numpoints): # maybe there's a way to vectorize this? no idea tbh
-    for idx in x['neighbors']:
+    for idx in x['neihbors']:
         data.at[idx,'cluster'] = clusterCount
         # x['cluster']
         if idx in core.index:

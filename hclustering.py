@@ -6,6 +6,12 @@ from itertools import groupby
 
 from collections import defaultdict
 import json
+import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D
+
+
+
+
 
 class NpEncoder(json.JSONEncoder):
     def default(self, obj):
@@ -108,7 +114,7 @@ def single_link_distance(categorical_numerical_map, cluster1,cluster2):
     smallest_distance = float('inf')
     for point in cluster1:
         for point2 in cluster2:
-            distance_p1_p2 = eucledian_distance(point, point2)
+            distance_p1_p2 = eucledian_distance(categorical_numerical_map,point, point2)
             if distance_p1_p2 < smallest_distance:
                 smallest_distance = distance_p1_p2
     return smallest_distance
@@ -117,7 +123,7 @@ def complete_link_distance(categorical_numerical_map, cluster1,cluster2):
     biggest_distance = 0
     for point in cluster1:
         for point2 in cluster2:
-            distance_p1_p2 = eucledian_distance(point, point2)
+            distance_p1_p2 = eucledian_distance(categorical_numerical_map,point, point2)
             if distance_p1_p2 > biggest_distance:
                 biggest_distance = distance_p1_p2
     return biggest_distance
@@ -126,7 +132,7 @@ def average_link_distance(categorical_numerical_map, cluster1, cluster2):
     average_distance = 0
     for point in cluster1:
         for point2 in cluster2:
-            average_distance += eucledian_distance(point, point2)
+            average_distance += eucledian_distance(categorical_numerical_map,point, point2)
     return average_distance / (len(cluster1) * len(cluster2))
 
 def remove_cluster(clusters,target):
@@ -207,7 +213,51 @@ def evaluation(clusters):
         print('Average distance to center: ', average_distance)
 
 
+def graph(clusters, dimension):
+    if dimension == 3:
+        fig = plt.figure()
+        ax = Axes3D(fig)
 
+    for index, cluster in enumerate(clusters):
+        all_points = []
+        get_all_points(cluster,all_points)
+        all_points = np.array(all_points)
+        if dimension == 2:
+            x, y = all_points.T
+            plt.scatter(x,y)
+        elif dimension == 3:
+
+            x,y,z = all_points.T
+            # import pdb; pdb.set_trace()
+
+            ax.scatter3D(z, y, x)
+    # plt.show()
+    plt.show()
+
+def compacted_ratio(clusters):
+    radius_clusters = []
+    centroid_of_clusters = []
+    centroid_distances = []
+
+    for index, cluster in enumerate(clusters):
+        all_points = []
+        get_all_points(cluster, all_points)
+        center = compute_center(all_points)
+        distance_to_center = [eucledian_distance(point, center) for point in all_points]
+        max_distance = max(distance_to_center)
+        centroid_of_clusters.append(center)
+        radius_clusters.append(max_distance)
+    for index, centroid in enumerate(centroid_of_clusters):
+        if index == len(centroid_of_clusters) - 1:
+            break
+        other_centroids = centroid_of_clusters[index+1:]
+        distance_from_centroid_to_centroid = [eucledian_distance(centroid, c2) for c2 in other_centroids]
+        centroid_distances = centroid_distances + distance_from_centroid_to_centroid
+    # import pdb; pdb.set_trace()
+
+    average_centroid_distance = sum(centroid_distances) / len(centroid_distances)
+    average_radius = sum(radius_clusters) / len(radius_clusters)
+    return  average_centroid_distance / average_radius
 
 def main():
     n = len(sys.argv)
@@ -240,6 +290,8 @@ def main():
         data.columns)))})  # rename columns with dimension value
     # print(data)
 
+    number_of_columns = len(data.columns)
+
 
     entire_hiearchy = agglomerative(categorial_numerical_map,data, distance_method) #dendrogram has all level
     if alpha != 0:
@@ -247,6 +299,11 @@ def main():
         get_alpha_cluster(alpha, entire_hiearchy.__dict__, alpha_cut_off_clusters)
         print('\n\nWith an threshold value of {0}, we have {1} total clusters:\n\n'.format(alpha, len(alpha_cut_off_clusters)))
         evaluation(alpha_cut_off_clusters)
+        if number_of_columns == 2 or number_of_columns == 3:
+            graph(alpha_cut_off_clusters, number_of_columns)
+        else:
+            ratio = compacted_ratio(alpha_cut_off_clusters)
+            print('\n\n RATIO =', ratio)
         with open(filepath.replace('.csv', '') + '_output_alpha.txt', 'w') as file:
             file.write('//We end up with {0} clusters with alpha value of {1} \n'.format(len(alpha_cut_off_clusters),alpha))
             for index, cluster in enumerate(alpha_cut_off_clusters):
