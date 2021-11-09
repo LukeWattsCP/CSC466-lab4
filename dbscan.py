@@ -4,6 +4,9 @@ import pandas as pd
 from pandas.io.formats.format import return_docstring
 
 
+# import matplotlib.pyplot as plt
+# from mpl_toolkits.mplot3d import Axes3D
+
 
 def coreCluster(x,data,core,distArray,clusterCount,epsilon,numpoints):
     if pd.isnull(core.loc[x.name]['cluster']):
@@ -60,14 +63,18 @@ def main():
             data = data.drop(data.columns[ix], axis=1)
     data = data.rename(columns={x:y for x,y in zip(data.columns,range(0,len(data.columns)))}) # rename columns with dimension value 
 
-    # print(data)
 
     distArray = data.apply(lambda r: euclideanDF(r, data), axis = 1)
     # distArray.values[[np.arange(distArray.shape[0])]*2] = -1
     # s = pd.Series(data=[1,2,3],index=['a','b','c'])
     np.fill_diagonal(distArray.values, -1)
-    print(distArray)
+    
+    # print(distArray)
+
     classification = distArray[(distArray[:] <= epsilon) & (distArray[:] != -1)].count()
+
+    # print(classification)
+
     classification = classification.apply(lambda r: 'c' if r >= numpoints else 'n')
     classification = pd.DataFrame({'type':classification.values})
     # print(classification)
@@ -92,17 +99,98 @@ def main():
 
     clusterCount = -1
     core.apply(lambda x: coreCluster(x,data,core,distArray,clusterCount,epsilon,numpoints), axis = 1)
-    print(str(data.to_string()))
-    print(str(core.to_string()))
+    
+    data['cluster'] = data['cluster'].fillna(-1)
+
+    data['type'] = data.apply(lambda x: 'b' if ((x['type'] == 'n')and(x['cluster']) != -1) else x['type'], axis = 1) 
+    # classification = distArray[(distArray[:] <= epsilon) & (distArray[:] != -1)].count()
+    # classification = classification.apply(lambda r: 'c' if r >= numpoints else 'n')
+    # classification = pd.DataFrame({'type':classification.values})
 
 
-    print('END')
+    # print(str(data.to_string()))
+    # print(str(core.to_string()))
+
+
+
+
+
+
+
+    # points = data.drop(['visited','type'], axis = 1) 
+    clusters = sorted(data['cluster'].unique())
+    # print(clusters)
+
+
+    for c in clusters:
+        if c != -1:
+            print("Cluster: " + str(int(c)))
+
+            clusteri = data.loc[data['cluster'] == c]
+            clusteri = clusteri.drop(['visited', 'type', 'cluster'], axis = 1)
+            centroid = tuple(clusteri.mean())
+
+            print("Center: " + str(centroid))
+            centroid = pd.DataFrame([centroid])
+
+            centDists = euclideanDF2(clusteri,centroid)
+            print("Max Dist. to Center: " + str(centDists.max()) )
+            print("Min Dist. to Center: " + str(centDists.min()) )
+            print("Avg Dist. to Center: " + str(centDists.mean()) )
+            clusteri = data.loc[data['cluster'] == c]
+            clusteri = clusteri.drop(['visited', 'cluster'], axis = 1)
+            print(str(len(clusteri)) + " Points:")
+            
+            print(clusteri.to_string())
+    if clusters[0] == -1:
+        clusteri = data.loc[data['cluster'] == -1]
+        clusteri = clusteri.drop(['visited', 'cluster'], axis = 1)
+        print( str(len(clusteri)) + " Noise Points/Outliers (" + str((round((len(clusteri)/len(data)*100),2)))+" percent of dataset):")
+        print(str(clusteri.to_string()))
+    else:
+        print("0 Noise Points/Outliers")
+
+    
+    # print(distArray)
+    # data = data.drop(['visited','type'], axis = 1)
+    # print(data)
+
+    # data.columns = ['x','y', 'z','cluster'] 
+
+    # # 2D
+    # groups = data.groupby('cluster')
+    # fig, ax = plt.subplots()
+    # for name, group in groups:
+    #     ax.plot(group.x, group.y, marker='o', linestyle='', ms=12, label=name)
+    # ax.legend()
+
+    # plt.show()
+
+    # 3D
+    # fig = plt.figure(figsize=(10, 10))
+    # ax = plt.axes(projection='3d')
+    # ax.scatter3D(data['x'], data['y'], data['z'], c=data['cluster'])
+    # plt.show()
+
+    print("End")
 
 
 def euclideanDF(df1, df2):
+
     r = df1 - df2
     r = r.pow(2).sum(axis = 1).apply(np.sqrt)
+
     return r
+
+def euclideanDF2(v1, v2):
+
+    r = pd.DataFrame(v1.values - v2.values, columns=v1.columns)
+    r = r.pow(2).sum(axis = 1).apply(np.sqrt)
+
+    return r
+
+
+
 
 def findNeighbors(df1, e):
     r = df1.index[(df1 <= e) & (df1 != -1)].tolist()

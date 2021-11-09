@@ -4,8 +4,8 @@ import numpy as np
 from pandas.core.frame import DataFrame
 import random
 
-import matplotlib.pyplot as plt
-from mpl_toolkits.mplot3d import Axes3D
+# import matplotlib.pyplot as plt
+# from mpl_toolkits.mplot3d import Axes3D
 
 
 def kmeanspp(data, k):
@@ -170,7 +170,7 @@ def main():
     for ix, a in enumerate(restAttrs):
         if int(a) != 1:
             data = data.drop(data.columns[ix], axis=1)
-    print(data)
+    # print(data)
 
 
 
@@ -287,8 +287,9 @@ def main():
         prevSmallest = smallest
         loopcounter += 1
 
-    print(data)
+    # print(data)
     # print(dfp2c)
+    clusterList = []
     print("Clustering finished, number of centroid recalculations performed: " + str(loopcounter))
     for c in centroids:
         print("Cluster " + str(centroids.index(c))+":")
@@ -299,17 +300,20 @@ def main():
         print(str(dfp2c.groupby(['centroid']).count()[centroids.index(c)][centroids.index(c)])+" Points:")
         centPoints = data.loc[data['centroid'] == centroids.index(c)]
         centPoints = centPoints.drop(['centroid'], axis = 1).sort_index()
+        clusterList.append(centPoints)
         print( centPoints.to_string() )
 
 
-    data.columns = ['x','y', 'z', 'centroid']
-    print(data)
+    # data.columns = ['x','y', 'z', 'centroid']
+    # data.columns = ['x','y', 'centroid']
 
-    # # 2D
+    # print(data)
+
+    # 2D
     # groups = data.groupby('centroid')
     # fig, ax = plt.subplots()
     # for name, group in groups:
-    #     ax.plot(group.x, group.y, group.z, marker='o', linestyle='', ms=12, label=name)
+    #     ax.plot(group.x, group.y, marker='o', linestyle='', ms=12, label=name)
     # ax.legend()
 
     # plt.show()
@@ -319,8 +323,36 @@ def main():
     # ax = plt.axes(projection='3d')
     # ax.scatter3D(data['x'], data['y'], data['z'], c=data['centroid'])
     # plt.show()
+    # data = data.sort_index()
+    # setosa = data[0:50]
+    # setosa = setosa.drop('centroid', axis =1)
+    # setosa.columns = ['a','b','c','d']
+    # testsetosa = clusterList[1]
+    # testsetosa.columns = ['a','b','c','d']
 
-    # print("End")
+    # sj = pd.merge(setosa, testsetosa, how='inner', on = ['a','b','c','d'])
+
+    # print(len(sj.drop_duplicates(subset=['a','b','c', 'd'], keep=False)))
+    # print(len(set(setosa).intersection(clusterList[1])))
+    # print(len(pd.merge(setosa, clusterList[1], how='outer'))/len(clusterList[1]))
+
+
+    # veris = data[50:100]
+    # veris = veris.drop('centroid', axis =1)
+
+    # print(veris)
+    # print(clusterList[0])
+    # print(veris.eq(clusterList[0]).mean())
+
+    # virgin = data[100:]
+    # virgin = virgin.drop('centroid', axis =1)
+    # print(virgin)
+    # print(clusterList[2])
+    # print(virgin.eq(clusterList[2]).mean())
+
+
+
+    print("End")
 
 
 
