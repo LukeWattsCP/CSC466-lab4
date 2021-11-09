@@ -2,7 +2,7 @@ import sys
 import numpy as np
 import pandas as pd
 from pandas.io.formats.format import return_docstring
-
+from distance_helper import eucledian_distance
 
 # import matplotlib.pyplot as plt
 # from mpl_toolkits.mplot3d import Axes3D
@@ -121,18 +121,48 @@ def main():
     clusters = sorted(data['cluster'].unique())
     # print(clusters)
 
+    def compacted_ratio(clusters):
+        radius_clusters = []
+        centroid_of_clusters = []
+        centroid_distances = []
+
+        for index, cluster in enumerate(clusters):
+            all_points = []
+            get_all_points(cluster, all_points)
+            center = compute_center(all_points)
+            distance_to_center = [eucledian_distance(point, center) for point in all_points]
+            max_distance = max(distance_to_center)
+            centroid_of_clusters.append(center)
+            radius_clusters.append(max_distance)
+        for index, centroid in enumerate(centroid_of_clusters):
+            if index == len(centroid_of_clusters) - 1:
+                break
+            other_centroids = centroid_of_clusters[index + 1:]
+            distance_from_centroid_to_centroid = [eucledian_distance(centroid, c2) for c2 in other_centroids]
+            centroid_distances = centroid_distances + distance_from_centroid_to_centroid
+        # import pdb; pdb.set_trace()
+
+        average_centroid_distance = sum(centroid_distances) / len(centroid_distances)
+        average_radius = sum(radius_clusters) / len(radius_clusters)
+        return average_centroid_distance / average_radius
+
+    radius_clusters = []
+    centroid_of_clusters = []
+    centroid_distances = []
 
     for c in clusters:
+
         if c != -1:
             print("Cluster: " + str(int(c)))
-
             clusteri = data.loc[data['cluster'] == c]
             clusteri = clusteri.drop(['visited', 'type', 'cluster'], axis = 1)
             centroid = tuple(clusteri.mean())
 
+            #added for compactness calculation
+            centroid_of_clusters.append(centroid)
+
             print("Center: " + str(centroid))
             centroid = pd.DataFrame([centroid])
-
             centDists = euclideanDF2(clusteri,centroid)
             print("Max Dist. to Center: " + str(centDists.max()) )
             print("Min Dist. to Center: " + str(centDists.min()) )
@@ -140,8 +170,26 @@ def main():
             clusteri = data.loc[data['cluster'] == c]
             clusteri = clusteri.drop(['visited', 'cluster'], axis = 1)
             print(str(len(clusteri)) + " Points:")
-            
             print(clusteri.to_string())
+
+            #added for compact ness
+            radius_clusters.append(centDists.max())
+
+    #calculating ratio! comment this out if not needed, only used for analysis purposes
+    for index, centroid in enumerate(centroid_of_clusters):
+        if index == len(centroid_of_clusters) - 1:
+            break
+        other_centroids = centroid_of_clusters[index + 1:]
+        distance_from_centroid_to_centroid = [eucledian_distance(centroid, c2) for c2 in other_centroids]
+        centroid_distances = centroid_distances + distance_from_centroid_to_centroid
+
+    import pdb;
+    pdb.set_trace()
+
+    average_centroid_distance = sum(centroid_distances) / len(centroid_distances)
+    average_radius = sum(radius_clusters) / len(radius_clusters)
+    ratio = average_centroid_distance / average_radius
+
     if clusters[0] == -1:
         clusteri = data.loc[data['cluster'] == -1]
         clusteri = clusteri.drop(['visited', 'cluster'], axis = 1)
@@ -196,7 +244,8 @@ def findNeighbors(df1, e):
     r = df1.index[(df1 <= e) & (df1 != -1)].tolist()
 
     return r
-    
+
+
 
 
 if __name__ == "__main__":
