@@ -159,12 +159,12 @@ def main():
         distance_from_centroid_to_centroid = [eucledian_distance(centroid, c2) for c2 in other_centroids]
         centroid_distances = centroid_distances + distance_from_centroid_to_centroid
 
-    import pdb;
-    pdb.set_trace()
+
 
     average_centroid_distance = sum(centroid_distances) / len(centroid_distances)
     average_radius = sum(radius_clusters) / len(radius_clusters)
     ratio = average_centroid_distance / average_radius
+    print('ratio is, ', ratio)
 
     if clusters[0] == -1:
         clusteri = data.loc[data['cluster'] == -1]
