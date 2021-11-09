@@ -155,14 +155,14 @@ def main():
 
             #added for ground truth
             # import pdb; pdb.set_trace()
-            all_points = np.array(clusteri)
-            cluster_classifiers = [class_point[tuple(x)] for x in all_points]
-            most_common_class = most_common(cluster_classifiers)
-            times_occur = cluster_classifiers.count(most_common_class)
-            print('The most common classifier is: ', most_common_class)
-            print('There are {0} total items in this cluster'.format(len(all_points)))
-            print('There are {0} items with the most common classifier'.format(times_occur))
-            print('The ratio of accuracy is:{0} % '.format(times_occur / len(all_points) * 100))
+            # all_points = np.array(clusteri)
+            # cluster_classifiers = [class_point[tuple(x)] for x in all_points]
+            # most_common_class = most_common(cluster_classifiers)
+            # times_occur = cluster_classifiers.count(most_common_class)
+            # print('The most common classifier is: ', most_common_class)
+            # print('There are {0} total items in this cluster'.format(len(all_points)))
+            # print('There are {0} items with the most common classifier'.format(times_occur))
+            # print('The ratio of accuracy is:{0} % '.format(times_occur / len(all_points) * 100))
 
 
 
@@ -187,19 +187,19 @@ def main():
             radius_clusters.append(centDists.max())
 
     #calculating ratio! comment this out if not needed, only used for analysis purposes
-    for index, centroid in enumerate(centroid_of_clusters):
-        if index == len(centroid_of_clusters) - 1:
-            break
-        other_centroids = centroid_of_clusters[index + 1:]
-        distance_from_centroid_to_centroid = [eucledian_distance(centroid, c2) for c2 in other_centroids]
-        centroid_distances = centroid_distances + distance_from_centroid_to_centroid
-
-
-    # import pdb; pdb.set_trace()
-    average_centroid_distance = sum(centroid_distances) / len(centroid_distances)
-    average_radius = sum(radius_clusters) / len(radius_clusters)
-    ratio = average_centroid_distance / average_radius
-    print('ratio is, ', ratio)
+    # for index, centroid in enumerate(centroid_of_clusters):
+    #     if index == len(centroid_of_clusters) - 1:
+    #         break
+    #     other_centroids = centroid_of_clusters[index + 1:]
+    #     distance_from_centroid_to_centroid = [eucledian_distance(centroid, c2) for c2 in other_centroids]
+    #     centroid_distances = centroid_distances + distance_from_centroid_to_centroid
+    #
+    #
+    # # import pdb; pdb.set_trace()
+    # average_centroid_distance = sum(centroid_distances) / len(centroid_distances)
+    # average_radius = sum(radius_clusters) / len(radius_clusters)
+    # ratio = average_centroid_distance / average_radius
+    # print('ratio is, ', ratio)
 
     if clusters[0] == -1:
         clusteri = data.loc[data['cluster'] == -1]
