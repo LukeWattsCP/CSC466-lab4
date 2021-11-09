@@ -1,9 +1,9 @@
-def eucledian_distance(categorical_map,current_data: tuple, other_data: tuple):
+def eucledian_distance(current_data: tuple, other_data: tuple):
     i = 0
     distance_total = 0
     # import pdb; pdb.set_trace()
     while i < len(current_data):
-        categorical = categorical_map[i]
+        categorical = False
         if not categorical: #means numeric
 
             try:

@@ -114,7 +114,7 @@ def single_link_distance(categorical_numerical_map, cluster1,cluster2):
     smallest_distance = float('inf')
     for point in cluster1:
         for point2 in cluster2:
-            distance_p1_p2 = eucledian_distance(categorical_numerical_map,point, point2)
+            distance_p1_p2 = eucledian_distance(point, point2)
             if distance_p1_p2 < smallest_distance:
                 smallest_distance = distance_p1_p2
     return smallest_distance
@@ -123,7 +123,7 @@ def complete_link_distance(categorical_numerical_map, cluster1,cluster2):
     biggest_distance = 0
     for point in cluster1:
         for point2 in cluster2:
-            distance_p1_p2 = eucledian_distance(categorical_numerical_map,point, point2)
+            distance_p1_p2 = eucledian_distance(point, point2)
             if distance_p1_p2 > biggest_distance:
                 biggest_distance = distance_p1_p2
     return biggest_distance
@@ -132,7 +132,7 @@ def average_link_distance(categorical_numerical_map, cluster1, cluster2):
     average_distance = 0
     for point in cluster1:
         for point2 in cluster2:
-            average_distance += eucledian_distance(categorical_numerical_map,point, point2)
+            average_distance += eucledian_distance(point, point2)
     return average_distance / (len(cluster1) * len(cluster2))
 
 def remove_cluster(clusters,target):
