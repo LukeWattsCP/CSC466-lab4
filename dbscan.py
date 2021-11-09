@@ -121,31 +121,7 @@ def main():
     clusters = sorted(data['cluster'].unique())
     # print(clusters)
 
-    def compacted_ratio(clusters):
-        radius_clusters = []
-        centroid_of_clusters = []
-        centroid_distances = []
-
-        for index, cluster in enumerate(clusters):
-            all_points = []
-            get_all_points(cluster, all_points)
-            center = compute_center(all_points)
-            distance_to_center = [eucledian_distance(point, center) for point in all_points]
-            max_distance = max(distance_to_center)
-            centroid_of_clusters.append(center)
-            radius_clusters.append(max_distance)
-        for index, centroid in enumerate(centroid_of_clusters):
-            if index == len(centroid_of_clusters) - 1:
-                break
-            other_centroids = centroid_of_clusters[index + 1:]
-            distance_from_centroid_to_centroid = [eucledian_distance(centroid, c2) for c2 in other_centroids]
-            centroid_distances = centroid_distances + distance_from_centroid_to_centroid
-        # import pdb; pdb.set_trace()
-
-        average_centroid_distance = sum(centroid_distances) / len(centroid_distances)
-        average_radius = sum(radius_clusters) / len(radius_clusters)
-        return average_centroid_distance / average_radius
-
+    #these three variables are used for ratio calculation
     radius_clusters = []
     centroid_of_clusters = []
     centroid_distances = []
