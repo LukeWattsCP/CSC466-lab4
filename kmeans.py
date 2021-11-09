@@ -305,17 +305,11 @@ def main():
 
 
     # data.columns = ['x','y', 'z', 'centroid']
-<<<<<<< HEAD
-    # print(data)
-    #
-    # # 2D
-=======
     # data.columns = ['x','y', 'centroid']
 
     # print(data)
 
     # 2D
->>>>>>> law
     # groups = data.groupby('centroid')
     # fig, ax = plt.subplots()
     # for name, group in groups:

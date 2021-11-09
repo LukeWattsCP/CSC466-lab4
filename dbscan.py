@@ -3,15 +3,10 @@ import numpy as np
 import pandas as pd
 from pandas.io.formats.format import return_docstring
 
-<<<<<<< HEAD
-def db_scan(episilon, minpoints):
-    pass
-=======
 
 # import matplotlib.pyplot as plt
 # from mpl_toolkits.mplot3d import Axes3D
 
->>>>>>> law
 
 def coreCluster(x,data,core,distArray,clusterCount,epsilon,numpoints):
     if pd.isnull(core.loc[x.name]['cluster']):
@@ -32,7 +27,7 @@ def coreCluster(x,data,core,distArray,clusterCount,epsilon,numpoints):
     return
 
 def densityConnected(x,data,core,distArray,clusterCount,epsilon,numpoints): # maybe there's a way to vectorize this? no idea tbh
-    for idx in x['neihbors']:
+    for idx in x['neighbors']:
         data.at[idx,'cluster'] = clusterCount
         # x['cluster']
         if idx in core.index:
