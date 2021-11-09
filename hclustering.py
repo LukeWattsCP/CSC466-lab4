@@ -8,6 +8,7 @@ from collections import defaultdict
 import json
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
+import copy
 
 
 
@@ -259,6 +260,26 @@ def compacted_ratio(clusters):
     average_radius = sum(radius_clusters) / len(radius_clusters)
     return  average_centroid_distance / average_radius
 
+def ground_truth(classifier, clusters):
+    print('\n\nGROUND TRUTH EVALUATIONS!!!')
+    for index, cluster in enumerate(clusters):
+        all_points = []
+        get_all_points(cluster, all_points)
+        cluster_classifiers = [classifier[x] for x in all_points]
+        most_common_class = most_common(cluster_classifiers)
+        times_occur = cluster_classifiers.count(most_common_class)
+        # import pdb; pdb.set_trace()
+        print('********************Cluster {0}*********************'.format(index + 1))
+        print('The most common classifier is: ', most_common_class)
+        print('There are {0} total items in this cluster'.format(len(all_points)))
+        print('There are {0} items with the most common classifier'.format(times_occur))
+        print('The ratio of accuracy is:{0} % '.format(times_occur/len(all_points) * 100))
+
+        # import pdb; pdb.set_trace()
+
+def most_common(lst):
+    return max(set(lst), key=lst.count)
+
 def main():
     n = len(sys.argv)
     k = 0  # number of clusters desired
@@ -279,7 +300,14 @@ def main():
 
 
     data = pd.read_csv(filepath, index_col=False)  # the points
+    class_point = {}
+    #hard coded for iris to use classifier
+    if filepath == 'iris.csv':
+        data_copy = copy.deepcopy(data)
+        copy_points = [tuple(x) for x in data_copy.to_numpy()]
 
+        for row in copy_points:
+            class_point[row[0:4]] = row[4]
     for index, value in enumerate(line1.split(',')):
         if value == '0':
             categorial_numerical_map[index] = 'categorical'
@@ -301,6 +329,8 @@ def main():
         evaluation(alpha_cut_off_clusters)
         if number_of_columns == 2 or number_of_columns == 3:
             graph(alpha_cut_off_clusters, number_of_columns)
+        elif filepath == 'iris.csv':
+            ground_truth(class_point, alpha_cut_off_clusters)
         else:
             ratio = compacted_ratio(alpha_cut_off_clusters)
             print('\n\n RATIO =', ratio)
