@@ -153,9 +153,9 @@ def main():
     
     # print(distArray)
     # data = data.drop(['visited','type'], axis = 1)
-    # print(data)
+    # # print(data)
 
-    # data.columns = ['x','y', 'z','cluster'] 
+    # data.columns = ['x','y','cluster'] 
 
     # # 2D
     # groups = data.groupby('cluster')
@@ -166,13 +166,13 @@ def main():
 
     # plt.show()
 
-    # 3D
-    # fig = plt.figure(figsize=(10, 10))
-    # ax = plt.axes(projection='3d')
-    # ax.scatter3D(data['x'], data['y'], data['z'], c=data['cluster'])
-    # plt.show()
+    # # 3D
+    # # fig = plt.figure(figsize=(10, 10))
+    # # ax = plt.axes(projection='3d')
+    # # ax.scatter3D(data['x'], data['y'], data['z'], c=data['cluster'])
+    # # plt.show()
 
-    print("End")
+    # print("End")
 
 
 def euclideanDF(df1, df2):
